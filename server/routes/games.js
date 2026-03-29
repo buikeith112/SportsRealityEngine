@@ -3,9 +3,9 @@ import { getGames, getPlays } from "../services/espn.js";
 
 const router = Router();
 
-router.get("/", async (_req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const games = await getGames();
+    const games = await getGames(req.query.date || null);
     res.json(games);
   } catch (err) {
     console.error("Games fetch error:", err.message);

@@ -28,8 +28,11 @@ async function fetchWithRetry(url, retries = 2) {
   }
 }
 
-export async function getGames() {
-  const data = await fetchWithRetry(SCOREBOARD_URL);
+export async function getGames(dateStr = null) {
+  const url = dateStr
+    ? `${SCOREBOARD_URL}?dates=${dateStr}`
+    : SCOREBOARD_URL;
+  const data = await fetchWithRetry(url);
   return data.events.map((event) => {
     const competition = event.competitions[0];
     const home = competition.competitors.find((c) => c.homeAway === "home");

@@ -1,7 +1,8 @@
 const BASE = "/api";
 
-export async function fetchGames() {
-  const res = await fetch(`${BASE}/games`);
+export async function fetchGames(dateStr = null) {
+  const params = dateStr ? `?date=${dateStr}` : "";
+  const res = await fetch(`${BASE}/games${params}`);
   if (!res.ok) throw new Error("Failed to fetch games");
   return res.json();
 }
