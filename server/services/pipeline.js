@@ -4,6 +4,18 @@ import { generateMusic } from "./lyria.js";
 import { generateCommentary } from "./tts.js";
 import { submitVeoGeneration, pollVeoOperation } from "./veo.js";
 
+// Strip real player/team names from Veo prompts to avoid content policy violations
+function sanitizeForVeo(prompt) {
+  // Remove common NBA team names
+  const teams = /\b(Lakers|Celtics|Warriors|Bucks|Heat|Nets|Knicks|Suns|76ers|Sixers|Nuggets|Mavericks|Mavs|Clippers|Grizzlies|Cavaliers|Cavs|Bulls|Raptors|Hawks|Pelicans|Kings|Timberwolves|Wolves|Thunder|Blazers|Trail Blazers|Pacers|Spurs|Rockets|Magic|Pistons|Hornets|Jazz|Wizards)\b/gi;
+  let cleaned = prompt.replace(teams, "the team");
+
+  // Remove anything that looks like a proper name (two+ capitalized words in sequence)
+  cleaned = cleaned.replace(/\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\b/g, "the player");
+
+  return cleaned;
+}
+
 function sendSSE(res, event, data) {
   res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 }
@@ -64,9 +76,11 @@ export async function runPipeline(res, play, gameContext, whatIf) {
 
       const veoPromise = (async () => {
         try {
-          const opName = await submitVeoGeneration(
-            `Cinematic slow-motion NBA basketball. ${sceneJSON.videoPrompt}. Dramatic arena lighting, ESPN broadcast style.`
+          const veoPrompt = sanitizeForVeo(
+            `Cinematic slow-motion basketball game in a packed arena. ${sceneJSON.videoPrompt}. Dramatic arena lighting, broadcast camera style.`
           );
+          console.log("Veo prompt:", veoPrompt);
+          const opName = await submitVeoGeneration(veoPrompt);
           const videoDataUrl = await pollVeoOperation(opName);
           if (videoDataUrl) {
             sendSSE(res, "video", { videoDataUrl });

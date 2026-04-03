@@ -1,12 +1,16 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let ai;
+function getAI() {
+  if (!ai) ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  return ai;
+}
 
 export async function runDirectorBrain(playData, gameContext) {
   const prompt = `You are a sports cinematography director. Given this NBA play, output a JSON object with exactly these fields:
 {
   "sceneDescription": "Rich visual paragraph for image generation — describe court location, player position, defender, crowd, lighting, camera angle",
-  "videoPrompt": "Cinematic video prompt with motion, camera angle, lighting, action arc",
+  "videoPrompt": "Cinematic video prompt with motion, camera angle, lighting, action arc. IMPORTANT: Do NOT use any real player names, team names, or brand names — use generic descriptions like 'the tall forward', 'the point guard', 'the home team'. Veo cannot generate real people.",
   "musicMood": "one of: triumphant | intense | tense | celebratory | dramatic",
   "playType": "one of: dunk | three_pointer | layup | free_throw | steal | block | turnover | game_winner",
   "commentaryScript": "2-3 sentence broadcaster-style narration of the play, present tense, explosive energy"
@@ -21,7 +25,7 @@ ${playData.whatIf ? `ALTERNATE REALITY: ${playData.whatIf} — modify scene to r
 
 Respond ONLY with valid JSON. No markdown, no backticks, no extra text.`;
 
-  const response = await ai.models.generateContent({
+  const response = await getAI().models.generateContent({
     model: "gemini-2.5-flash",
     contents: prompt,
   });
@@ -31,7 +35,7 @@ Respond ONLY with valid JSON. No markdown, no backticks, no extra text.`;
     return JSON.parse(text.trim());
   } catch {
     // Retry with stricter prompt on parse failure
-    const retry = await ai.models.generateContent({
+    const retry = await getAI().models.generateContent({
       model: "gemini-2.5-flash",
       contents:
         prompt +

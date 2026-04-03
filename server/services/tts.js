@@ -1,11 +1,11 @@
 import { pcmToWav } from "../utils/pcmToWav.js";
 
-const API_KEY = process.env.GEMINI_API_KEY;
+function apiKey() { return process.env.GEMINI_API_KEY; }
 const BASE = "https://generativelanguage.googleapis.com/v1beta";
 
 export async function generateCommentary(sceneJSON) {
   const res = await fetch(
-    `${BASE}/models/gemini-2.5-flash-preview-tts:generateContent?key=${API_KEY}`,
+    `${BASE}/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey()}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },

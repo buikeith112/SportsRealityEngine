@@ -1,6 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let ai;
+function getAI() {
+  if (!ai) ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+  return ai;
+}
 
 export async function generateStoryboard(sceneJSON) {
   const prompt = `Cinematic sports photography, NBA arena, dramatic lighting, shallow depth of field.
@@ -8,9 +12,12 @@ ${sceneJSON.sceneDescription}
 Style: ESPN broadcast quality, motion blur on ball, high contrast.
 NO text, NO watermarks, NO logos.`;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash-preview-image",
+  const response = await getAI().models.generateContent({
+    model: "gemini-2.5-flash-image",
     contents: prompt,
+    config: {
+      responseModalities: ["IMAGE", "TEXT"],
+    },
   });
 
   for (const part of response.candidates[0].content.parts) {
@@ -18,5 +25,10 @@ NO text, NO watermarks, NO logos.`;
       return `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`;
     }
   }
+
+  // Log what we got for debugging
+  console.log("Nano Banana response parts:", JSON.stringify(
+    response.candidates?.[0]?.content?.parts?.map(p => ({ text: p.text?.slice(0, 100), hasInlineData: !!p.inlineData }))
+  ));
   throw new Error("No image returned from Nano Banana");
 }

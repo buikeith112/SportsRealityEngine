@@ -1,5 +1,5 @@
-const API_KEY = process.env.GEMINI_API_KEY;
 const BASE = "https://generativelanguage.googleapis.com/v1beta";
+function apiKey() { return process.env.GEMINI_API_KEY; }
 
 const MOOD_PROMPTS = {
   triumphant:
@@ -19,7 +19,7 @@ export async function generateMusic(sceneJSON) {
     MOOD_PROMPTS[sceneJSON.musicMood] || MOOD_PROMPTS.triumphant;
 
   const res = await fetch(
-    `${BASE}/models/lyria-3-clip-preview:generateContent?key=${API_KEY}`,
+    `${BASE}/models/lyria-3-clip-preview:generateContent?key=${apiKey()}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
